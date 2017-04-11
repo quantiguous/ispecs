@@ -1,0 +1,97 @@
+create or replace package pk_qg_spec_rp as
+  procedure initialize;
+
+  procedure test_data_header(pi_param1         integer,
+                             po_fault_code     out varchar2,
+                             po_fault_subcode  out varchar2,
+                             po_fault_reason   out varchar2,
+                             po_header         out sys_refcursor,
+                             po_cursname       out sys_refcursor);   
+
+  procedure test_no_or_column_header(pi_param1         integer,
+                                     po_fault_code     out varchar2,
+                                     po_fault_subcode  out varchar2,
+                                     po_fault_reason   out varchar2,
+                                     po_cursname       out sys_refcursor);
+
+  procedure test_header_failure(pi_param1         integer,
+                                po_fault_code     out varchar2,
+                                po_fault_subcode  out varchar2,
+                                po_fault_reason   out varchar2,
+                                po_header         out sys_refcursor,
+                                po_cursname       out sys_refcursor);
+end;
+/
+create or replace package body pk_qg_spec_rp as
+
+  CODE_BAD_INPUT     varchar2(100) := 'rp:E400';
+  MSG_BAD_INPUT      varchar2(100) := 'Bad Input';
+
+  procedure test_data_header(pi_param1         integer,
+                             po_fault_code     out varchar2,
+                             po_fault_subcode  out varchar2,
+                             po_fault_reason   out varchar2,
+                             po_header         out sys_refcursor,
+                             po_cursname       out sys_refcursor)
+  is
+  begin
+    if pi_param1 is null then
+      po_fault_code    := CODE_BAD_INPUT;
+      po_fault_reason  := MSG_BAD_INPUT;
+      return;
+    end if;
+
+    open po_header for
+      select 'COL_1', 'COL_2', 'COL_3', 'COL_4', 'COL_5', 'COL_6', 'COL_7', 'COL_8', 'COL_9', 'COL_10' from dual;
+
+    open po_cursname for
+      select reference_no, 2020 as int_val, amount, 2001.57 as decimal_val, code, name, replied_on, req_timestamp, status, fault_code from qg_spec_rp_tab where rownum < pi_param1 + 1;
+  end;
+
+  procedure test_no_or_column_header(pi_param1         integer,
+                                     po_fault_code     out varchar2,
+                                     po_fault_subcode  out varchar2,
+                                     po_fault_reason   out varchar2,
+                                     po_cursname       out sys_refcursor)
+  is
+     l_cursname sys_refcursor;
+  begin
+    test_data_header(pi_param1, po_fault_code, po_fault_subcode, po_fault_reason, l_cursname, po_cursname); 
+  end;
+
+  procedure test_header_failure(pi_param1         integer,
+                                po_fault_code     out varchar2,
+                                po_fault_subcode  out varchar2,
+                                po_fault_reason   out varchar2,
+                                po_header         out sys_refcursor,
+                                po_cursname       out sys_refcursor)
+  is
+     l_cursname sys_refcursor;
+  begin
+    if pi_param1 is null then
+      po_fault_code    := CODE_BAD_INPUT;
+      po_fault_reason  := MSG_BAD_INPUT;
+      return;
+    end if;
+
+    open po_header for
+      select 'COLUMN_1', 'COLUMN_2', 'COL_3', 'COL_4', 'COL_5', 'COL_6', 'COL_7', 'COL_8', 'COL_9', 'COL_10' from dual;
+
+    open po_cursname for
+      select reference_no, 2020 as int_val, amount, 2001.57 as decimal_val, code, name, replied_on, req_timestamp, status, fault_code from qg_spec_rp_tab where rownum < pi_param1 + 1;
+  end;
+
+  procedure initialize is
+  begin
+    delete qg_spec_rp_tab;
+
+    for i in 1..100 loop
+      insert into qg_spec_rp_tab values(i, 11, 1000.50, 'TEST_CODE', 'TEST_NAME', '112233', '400', SYSDATE, trunc(sysdate));
+    end loop;
+    commit;
+  end;
+
+begin
+  initialize;
+end;
+/

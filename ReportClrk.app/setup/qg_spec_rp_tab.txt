@@ -1,0 +1,16 @@
+drop table qg_spec_rp_tab
+/
+
+create table qg_spec_rp_tab (
+    id            number(38),
+    reference_no  number(38),
+    amount        number,
+    code          char(10),
+    name          varchar2(100),
+    status        char(10),
+    fault_code    varchar2(100),
+    req_timestamp date,
+    replied_on    date,
+    primary key(id)
+)
+/

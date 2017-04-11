@@ -9,7 +9,7 @@ class Report
   end
   
   def refresh
-    result = plsql.select(:first, "select state, line_count, fault_code from rp_reports where id = #{self.id}")
+    result = plsql.select(:first, "select * from rp_reports where id = #{self.id}")
     self.state = result[:state]
     self.line_count = result[:line_count]
     self.fault_code = result[:fault_code]
@@ -20,7 +20,6 @@ class Report
   def completed?
     self.state == 'COMPLETED'
   end
-
 end
 
 class ReportClrk
@@ -41,9 +40,9 @@ class ReportClrk
       args[:param1] = JSON.generate(param1_name: 'pi_param1', param1_type: 'number')
       
       if ['N','C'].include?(args[:header_kind])
-        args[:db_unit] ||= 'pk_qg_test_rp_service.test_no_or_column_header'
+        args[:db_unit] ||= 'pk_qg_spec_rp.test_no_or_column_header'
       else
-        args[:db_unit] ||= 'pk_qg_test_rp_service.test_data_header'
+        args[:db_unit] ||= 'pk_qg_spec_rp.test_data_header'
       end
 
       if args[:msg_model] == 'Y'
@@ -56,7 +55,8 @@ class ReportClrk
         end
       end
 
-    plsql.rp_available_reports.delete(args[:name])
+    plsql.rp_reports.delete(name: args[:name])
+    plsql.rp_available_reports.delete(name: args[:name])
     plsql.rp_available_reports.insert(args)
     
     plsql.commit
@@ -172,7 +172,7 @@ describe 'ReportClrk' do
     end
     
     context 'with message model serialization failure (mismatch in column name)' do
-      ar = {file_ext: 'csv', header_kind: 'D', msg_model: 'Y', db_unit: 'pk_qg_test_rp_service.test_header_failure'}
+      ar = {file_ext: 'csv', header_kind: 'D', msg_model: 'Y', db_unit: 'pk_qg_spec_rp.test_header_failure'}
 
       before(:all) do
         ReportClrk.setup(ar)

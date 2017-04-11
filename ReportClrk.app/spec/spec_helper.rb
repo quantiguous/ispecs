@@ -107,3 +107,8 @@ end
 
 require "ruby-plsql"
 plsql.connection = OCI8.new("inw","inw","jeos")
+["./setup/qg_spec_rp_tab.txt", "./setup/pk_qg_spec_rp.txt"].each do
+   File.read("./setup/qg_spec_rp_tab.txt").split('/').each do |stmt|
+     plsql.execute stmt if stmt.strip.length > 0
+   end
+end
