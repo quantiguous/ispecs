@@ -103,3 +103,4 @@ RSpec.configure do |config|
 end
 
 require 'faraday'
+require 'api_banking'
